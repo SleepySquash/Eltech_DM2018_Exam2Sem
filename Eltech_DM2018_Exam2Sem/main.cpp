@@ -158,7 +158,7 @@ struct Integer
             cout << "-";
         for (int i = Int.Degree; i >= 0; i--)
             os << Int.Digits[i];
-        return os; //123
+        return os;
     }
     
     friend std::istream& operator>>(std::istream& is, Integer& Int)
