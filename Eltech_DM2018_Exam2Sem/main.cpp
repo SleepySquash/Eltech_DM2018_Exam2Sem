@@ -64,7 +64,9 @@ void Summary(Natural&, Natural, Natural);
 void Subtraction(Natural&, Natural, Natural);
 void Multiply(Natural&, Natural, Natural);
 void Divide(Natural&, Natural, Natural);
+void DivideNoStrict(Natural&, Natural, Natural);
 void Modulo(Natural&, Natural, Natural);
+void ModuloNoStrict(Natural&, Natural, Natural);
 void PowerOfTen(Natural&, Natural, int);
 void GreatestCommonDivisor(Natural&, Natural, Natural);
 void LeastCommonMultiple(Natural&, Natural, Natural);
@@ -77,17 +79,27 @@ void Summary(Integer&, Integer, Integer);
 void Subtraction(Integer&, Integer, Integer);
 void Multiply(Integer&, Integer, Integer);
 void Divide(Integer&, Integer, Integer);
+void DivideNoStrict(Integer&, Integer, Integer);
 void Modulo(Integer&, Integer, Integer);
+void ModuloNoStrict(Integer&, Integer, Integer);
 
 /*Объявляем функции работы целых с натуральными числами*/
+void Summary(Integer&, Integer, Natural);
 void Multiply(Integer&, Integer, Natural);
 void Divide(Integer&, Integer, Natural);
+void DivideNoStrict(Integer&, Integer, Natural);
 void ConvertEqualToNatural(Natural&, Integer);
 
 /*Объявляем функции работы с рациональными дробями*/
+void SetZero(Fraction&);
 void ReduceFraction(Fraction&);
+void Summary(Fraction&, Fraction, Fraction);
+void Summary(Fraction&, Fraction, Integer);
+void FreeFraction(Fraction&);
 
 /*Объявляем функции работы с цепными дробями*/
+int Comparison(const ContinuedFraction&, const ContinuedFraction&);
+void WriteConvergenceFractionsTo(Fraction*&, ContinuedFraction, int);
 void FreeContinuedFraction(ContinuedFraction&);
 
 /*Объявляем функции работы целых с квадратичными иррациональностями*/
@@ -196,6 +208,78 @@ struct Fraction
         }
         return os;
     }
+    
+    friend std::istream& operator>>(std::istream& is, Fraction& Frac)
+    {
+        char *str = InputString();
+        bool SignReading{ false }, NowComesDeno{ false };
+        int CharsParsed{ 0 };
+        int StrLength = GetLength(str);
+        for (int i = 0; i <= StrLength; i++)
+        {
+            if (str[i] == '-')
+                SignReading = true;
+            if (str[i] == '/' || str[i] == '\\' || str[i] == '\0' || str[i] == ' ')
+            {
+                if (CharsParsed > 0)
+                {
+                    Integer Int; Int.Sign = SignReading;
+                    for (int j = i - 1; j >= i - CharsParsed; j--)
+                    {
+                        if (str[j] >= 48 && str[j] <= 57)
+                        {
+                            Int.Degree++;
+                            Int.Digits = (int*)realloc(Int.Digits, sizeof(int)*(Int.Degree + 1));
+                            Int.Digits[Int.Degree] = str[j] - 48;
+                        }
+                    }
+                    
+                    if (Int.Degree != -1)
+                    {
+                        if (NowComesDeno)
+                        {
+                            Frac.Deno.Degree = Int.Degree;
+                            Frac.Deno.Digits = Int.Digits;
+                            for (int k = 0; k <= Frac.Deno.Degree; k++)
+                                Frac.Deno.Digits[k] = Int.Digits[k];
+                        }
+                        else
+                        {
+                            Frac.Num.Sign = Int.Sign;
+                            Frac.Num.Degree = Int.Degree;
+                            Frac.Num.Digits = Int.Digits;
+                            for (int k = 0; k <= Frac.Num.Degree; k++)
+                                Frac.Num.Digits[k] = Int.Digits[k];
+                        }
+                    }
+                }
+                
+                SignReading = false;
+                CharsParsed = 0;
+                if (str[i] == '/')
+                    NowComesDeno = true;
+            }
+            else
+                CharsParsed++;
+        }
+        if (Frac.Num.Degree != -1 && Frac.Deno.Degree != -1)
+            ReduceFraction(Frac);
+        if (Frac.Num.Degree == -1 && Frac.Deno.Degree != -1)
+        {
+            Frac.Num.Sign = false;
+            Frac.Num.Degree = 0;
+            Frac.Num.Digits = (int*)malloc(sizeof(int));
+            Frac.Num.Digits[0] = 1;
+        }
+        if (Frac.Num.Degree != -1 && Frac.Deno.Degree == -1)
+        {
+            Frac.Deno.Degree = 0;
+            Frac.Deno.Digits = (int*)malloc(sizeof(int));
+            Frac.Deno.Digits[0] = 1;
+        }
+        
+        return is;
+    }
 };
 
 struct ContinuedFraction
@@ -233,6 +317,85 @@ struct ContinuedFraction
                 os << CFrac.Elements[i] << ",";
         }
         return os;
+    }
+    
+    friend std::istream& operator>>(std::istream& is, ContinuedFraction& CFrac)
+    {
+        if (CFrac.Degree == -1)
+        {
+            CFrac.Degree++;
+            CFrac.Elements = (Integer*)realloc(CFrac.Elements, sizeof(Integer)*(CFrac.Degree + 1));
+            CFrac.Elements[CFrac.Degree].Degree = -1;
+            CFrac.Elements[CFrac.Degree].Digits = nullptr;
+        }
+        
+        char *str = InputString();
+        bool SignReading{ false };
+        int CharsParsed{ 0 };
+        int StrLength = GetLength(str);
+        for (int i = 0; i <= StrLength; i++)
+        {
+            if (str[i] == '-')
+                SignReading = true;
+            if (str[i] == ',' || str[i] == ')' || str[i] == '(' || str[i] == '[' || str[i] == ']' || str[i] == ';' || str[i] == ' ')
+            {
+                if (str[i] == '(')
+                    CFrac.PeriodStartPos = CFrac.Degree;
+                else if (str[i] == ';')
+                {
+                    Integer Int; Int.Sign = SignReading;
+                    for (int j = i - 1; j >= i - CharsParsed; j--)
+                    {
+                        if (str[j] >= 48 && str[j] <= 57)
+                        {
+                            Int.Degree++;
+                            Int.Digits = (int*)realloc(Int.Digits, sizeof(int)*(Int.Degree + 1));
+                            Int.Digits[Int.Degree] = str[j] - 48;
+                        }
+                    }
+                    if (Int.Degree != -1)
+                    {
+                        CFrac.Elements[0].Sign = Int.Sign;
+                        CFrac.Elements[0].Degree = Int.Degree;
+                        CFrac.Elements[0].Digits = Int.Digits;
+                        for (int k = 0; k <= CFrac.Elements[0].Degree; k++)
+                            CFrac.Elements[0].Digits[k] = Int.Digits[k];
+                    }
+                }
+                else if (str[i] == ',' || str[i] == ')' || str[i] == ']' || str[i] == '\0')
+                {
+                    Integer Int;
+                    Int.Sign = SignReading;
+                    for (int j = i - 1; j >= i - CharsParsed; j--)
+                    {
+                        if (str[j] >= 48 && str[j] <= 57)
+                        {
+                            Int.Degree++;
+                            Int.Digits = (int*)realloc(Int.Digits, sizeof(int)*(Int.Degree+1));
+                            Int.Digits[Int.Degree]= str[j] - 48;
+                        }
+                    }
+                    
+                    if (Int.Degree != -1)
+                    {
+                        CFrac.Degree++;
+                        CFrac.Elements = (Integer*)realloc(CFrac.Elements, sizeof(Integer)*(CFrac.Degree + 1));
+                        CFrac.Elements[CFrac.Degree].Sign = Int.Sign;
+                        CFrac.Elements[CFrac.Degree].Degree = Int.Degree;
+                        CFrac.Elements[CFrac.Degree].Digits = Int.Digits;
+                        for (int k = 0; k <= CFrac.Elements[CFrac.Degree].Degree; k++)
+                            CFrac.Elements[CFrac.Degree].Digits[k] = Int.Digits[k];
+                    }
+                }
+                
+                SignReading = false;
+                CharsParsed = 0;
+            }
+            else
+                CharsParsed++;
+        }
+        
+        return is;
     }
 };
 
@@ -293,7 +456,7 @@ struct QuadIrrationality
         int StrLength = GetLength(str);
         for (int i = 0; i <= StrLength; i++)
         {
-            if (str[i] == '+' || str[i] == '-' || str[i] == ' ' || str[i] == '/' || str[i] == '\0')
+            if (str[i] == '+' || str[i] == '-' || str[i] == ' ' || str[i] == '/' || str[i] == '(' || str[i] == ')' || str[i] == '\0')
             {
                 //we've done parsing a number
                 if (CharsParsed > 0)
@@ -727,6 +890,18 @@ void Multiply(Natural &Mul, Natural that, Natural other)
 //----------------------------------------------------------
 void Divide(Natural &QuoResult, Natural that, Natural other)
 {
+    if (Comparison(that, other) == COMPARISON_SECOND_BIGGER)
+        SetZero(QuoResult);
+    else
+        DivideNoStrict(QuoResult, that, other);
+}
+
+//----------------------------------------------------------
+//void DivideNoStrict(Natural&, Natural, Natural)
+//Деление несторого нацело натуральных чисел.
+//----------------------------------------------------------
+void DivideNoStrict(Natural &QuoResult, Natural that, Natural other)
+{
     Natural second;
     Natural Rem;
     Natural Quo;
@@ -769,6 +944,10 @@ void Divide(Natural &QuoResult, Natural that, Natural other)
             if (Comparison(Zero, other) == COMPARISON_EQUAL_BIGGER)
                 cout << "Ошибка. Деление на 0." << endl;
         }
+        else if (Comparison(Zero, that) == COMPARISON_EQUAL_BIGGER)
+        {
+            //Quo = 0
+        }
         else
         {
             while (Comparison(Rem, second) != COMPARISON_SECOND_BIGGER)
@@ -787,14 +966,14 @@ void Divide(Natural &QuoResult, Natural that, Natural other)
                     free(Quo.Digits);
                 Quo.Digits = Sum.Digits;
             }
-            if (second.Digits != nullptr)
-                free(second.Digits);
-            if (Rem.Digits != nullptr)
-                free(Rem.Digits);
-            
             OptimazeNatural(Quo);
         }
     }
+    
+    if (second.Digits != nullptr)
+        free(second.Digits);
+    if (Rem.Digits != nullptr)
+        free(Rem.Digits);
     
     QuoResult.Degree = Quo.Degree;
     QuoResult.Digits = Quo.Digits;
@@ -802,9 +981,26 @@ void Divide(Natural &QuoResult, Natural that, Natural other)
 
 //----------------------------------------------------------
 //void Modulo(Natural&, Natural, Natural)
-//Остаток от деления натуральных чисел.
+//Деление нацело натуральных чисел.
 //----------------------------------------------------------
 void Modulo(Natural &RemResult, Natural that, Natural other)
+{
+    if (Comparison(that, other) == COMPARISON_SECOND_BIGGER)
+    {
+        RemResult.Degree = that.Degree;
+        RemResult.Digits = (int*)malloc(sizeof(int)*(RemResult.Degree + 1));
+        for (int i = 0; i <= RemResult.Degree; i++)
+            RemResult.Digits[i] = that.Digits[i];
+    }
+    else
+        ModuloNoStrict(RemResult, that, other);
+}
+
+//----------------------------------------------------------
+//void ModuloNoStrict(Natural&, Natural, Natural)
+//Остаток от деления нестрого натуральных чисел.
+//----------------------------------------------------------
+void ModuloNoStrict(Natural &RemResult, Natural that, Natural other)
 {
     Natural second;
     Natural Rem;
@@ -1127,6 +1323,30 @@ void Divide(Integer &QuoResult, Integer that, Integer other)
 }
 
 //----------------------------------------------------------
+//void DivideNoStrict(Integer&, Integer, Integer)
+//Деление несторого нацело целых чисел.
+//----------------------------------------------------------
+void DivideNoStrict(Integer &QuoResult, Integer that, Integer other)
+{
+    if ((!that.Sign && other.Sign) || (that.Sign && !other.Sign))
+    {
+        Natural Nat1; Nat1.Degree = that.Degree; Nat1.Digits = that.Digits;
+        Natural Nat2; Nat2.Degree = other.Degree; Nat2.Digits = other.Digits;
+        Natural NMul; DivideNoStrict(NMul, Nat1, Nat2);
+        QuoResult.Degree = NMul.Degree;
+        QuoResult.Digits = NMul.Digits;
+    }
+    else
+    {
+        Natural Nat1; Nat1.Degree = that.Degree; Nat1.Digits = that.Digits;
+        Natural Nat2; Nat2.Degree = other.Degree; Nat2.Digits = other.Digits;
+        Natural NMul; DivideNoStrict(NMul, Nat1, Nat2);
+        QuoResult.Degree = NMul.Degree;
+        QuoResult.Digits = NMul.Digits;
+    }
+}
+
+//----------------------------------------------------------
 //void Modulo(Integer&, Integer, Integer)
 //Остаток от деления целых чисел.
 //----------------------------------------------------------
@@ -1147,6 +1367,60 @@ void Modulo(Integer &RemResult, Integer that, Integer other)
         Natural NMul; Modulo(NMul, Nat1, Nat2);
         RemResult.Degree = NMul.Degree;
         RemResult.Digits = NMul.Digits;
+    }
+}
+
+//----------------------------------------------------------
+//void ModuloNoStrict(Integer&, Integer, Integer)
+//Остаток от деления целых чисел.
+//----------------------------------------------------------
+void ModuloNoStrict(Integer &RemResult, Integer that, Integer other)
+{
+    if ((!that.Sign && other.Sign) || (that.Sign && !other.Sign))
+    {
+        Natural Nat1; Nat1.Degree = that.Degree; Nat1.Digits = that.Digits;
+        Natural Nat2; Nat2.Degree = other.Degree; Nat2.Digits = other.Digits;
+        Natural NMul; ModuloNoStrict(NMul, Nat1, Nat2);
+        RemResult.Degree = NMul.Degree;
+        RemResult.Digits = NMul.Digits;
+    }
+    else
+    {
+        Natural Nat1; Nat1.Degree = that.Degree; Nat1.Digits = that.Digits;
+        Natural Nat2; Nat2.Degree = other.Degree; Nat2.Digits = other.Digits;
+        Natural NMul; ModuloNoStrict(NMul, Nat1, Nat2);
+        RemResult.Degree = NMul.Degree;
+        RemResult.Digits = NMul.Digits;
+    }
+}
+
+//----------------------------------------------------------
+//void Summary(Integer&, Integer, Natural)
+//Сумма целого числа с натуральным.
+//----------------------------------------------------------
+void Summary(Integer& Sum, Integer that, Natural other)
+{
+    if (!that.Sign)
+    {
+        Sum.Sign = that.Sign;
+        Natural Nat1; Nat1.Degree = that.Degree; Nat1.Digits = that.Digits;
+        Natural NSum; Summary(NSum, Nat1, other);
+        Sum.Degree = NSum.Degree;
+        Sum.Digits = NSum.Digits;
+    }
+    else
+    {
+        Natural Nat; ConvertEqualToNatural(Nat, that);
+        int CRes = Comparison(Nat, other);
+        if (that.Sign && CRes == COMPARISON_SECOND_BIGGER)
+            Sum.Sign = false;
+        else
+            Sum.Sign = true;
+        
+        Natural Nat1; Nat1.Degree = that.Degree; Nat1.Digits = that.Digits;
+        Natural NSub; Subtraction(NSub, Nat1, other);
+        Sum.Degree = NSub.Degree;
+        Sum.Digits = NSub.Digits;
     }
 }
 
@@ -1178,6 +1452,19 @@ void Divide(Integer &QuoResult, Integer that, Natural other)
 }
 
 //----------------------------------------------------------
+//void DivideNoStrict(Integer&, Integer, Natural)
+//Деление нацело целого числа на натуральное.
+//----------------------------------------------------------
+void DivideNoStrict(Integer &QuoResult, Integer that, Natural other)
+{
+    QuoResult.Sign = that.Sign;
+    Natural Nat1; Nat1.Degree = that.Degree; Nat1.Digits = that.Digits;
+    Natural NMul; DivideNoStrict(NMul, Nat1, other);
+    QuoResult.Degree = NMul.Degree;
+    QuoResult.Digits = NMul.Digits;
+}
+
+//----------------------------------------------------------
 //void ConvertEqualToNatural(Natural&, Integer)
 //Приравнивает указанное натуральное число к указанному целому, причём массив цифр оказывается общим для обоих чисел.
 //----------------------------------------------------------
@@ -1187,6 +1474,26 @@ void ConvertEqualToNatural(Natural& Nat, Integer Int)
     Nat.Digits = Int.Digits;
 }
 
+//----------------------------------------------------------
+//void SetZero(Fraction&)
+//Инициализация нуля как рациональной дроби.
+//----------------------------------------------------------
+void SetZero(Fraction& Frac)
+{
+    if (Frac.Num.Digits != nullptr)
+        free(Frac.Num.Digits);
+    if (Frac.Deno.Digits != nullptr)
+        free(Frac.Deno.Digits);
+    
+    Frac.Num.Sign = false;
+    Frac.Num.Degree = 0;
+    Frac.Num.Digits = (int*)malloc(sizeof(int));
+    Frac.Num.Digits[0] = 0;
+    
+    Frac.Deno.Degree = 0;
+    Frac.Deno.Digits = (int*)malloc(sizeof(int));
+    Frac.Deno.Digits[0] = 1;
+}
 //----------------------------------------------------------
 //void ReduceFraction(Fraction&)
 //Сокращение дроби.
@@ -1209,6 +1516,232 @@ void ReduceFraction(Fraction &Frac)
     
     Frac.Deno.Degree = DenoResult.Degree;
     Frac.Deno.Digits = DenoResult.Digits;
+}
+
+//----------------------------------------------------------
+//void Summary(Fraction&, Fraction, Fraction)
+//Сумма рациональных дробей.
+//----------------------------------------------------------
+void Summary(Fraction &Result, Fraction that, Fraction other)
+{
+    if (that.Num.Degree != -1 && that.Deno.Degree != -1 && other.Num.Degree != -1 && other.Deno.Degree != -1)
+    {
+        Natural LCM; LeastCommonMultiple(LCM, that.Deno, other.Deno);
+        Natural MultiplyByThat; Divide(MultiplyByThat, LCM, that.Deno);
+        Integer MultipliedThatNum; Multiply(MultipliedThatNum, that.Num, MultiplyByThat);
+        
+        Natural MultiplyByOther; Divide(MultiplyByOther, LCM, other.Deno);
+        Integer MultipliedOtherNum; Multiply(MultipliedOtherNum, other.Num, MultiplyByOther);
+        
+        Integer Sum; Summary(Sum, MultipliedThatNum, MultipliedOtherNum);
+        Result.Num.Sign = Sum.Sign;
+        Result.Num.Degree = Sum.Degree;
+        Result.Num.Digits = Sum.Digits;
+        Result.Deno.Degree = LCM.Degree;
+        Result.Deno.Digits = LCM.Digits;
+        
+        if (MultiplyByThat.Digits != nullptr)
+            free(MultiplyByThat.Digits);
+        if (MultipliedThatNum.Digits != nullptr)
+            free(MultipliedThatNum.Digits);
+        if (MultiplyByOther.Digits != nullptr)
+            free(MultiplyByOther.Digits);
+        if (MultipliedOtherNum.Digits != nullptr)
+            free(MultipliedOtherNum.Digits);
+        
+        ReduceFraction(Result);
+    }
+    else
+        cout << "Ошибка. Данные дроби некорректны." << endl;
+}
+
+//----------------------------------------------------------
+//void Summary(Fraction&, Fraction, Integer)
+//Сумма рациональной дроби и целого числа.
+//----------------------------------------------------------
+void Summary(Fraction &Result, Fraction that, Integer other)
+{
+    if (that.Num.Degree != -1 && that.Deno.Degree != -1 && other.Degree != -1)
+    {
+        Integer MultipliedOtherNum; Multiply(MultipliedOtherNum, other, that.Deno);
+        
+        Integer Sum; Summary(Sum, that.Num, MultipliedOtherNum);
+        Result.Num.Sign = Sum.Sign;
+        Result.Num.Degree = Sum.Degree;
+        Result.Num.Digits = Sum.Digits;
+        
+        Result.Deno.Degree = that.Deno.Degree;
+        Result.Deno.Digits = (int*)malloc(sizeof(int)*(Result.Deno.Degree + 1));
+        for (int i = 0; i <= Result.Deno.Degree; i++)
+            Result.Deno.Digits[i] = that.Deno.Digits[i];
+        
+        if (MultipliedOtherNum.Digits != nullptr)
+            free(MultipliedOtherNum.Digits);
+        
+        ReduceFraction(Result);
+    }
+    else
+        cout << "Ошибка. Данные дроби некорректны." << endl;
+}
+
+//----------------------------------------------------------
+//void FreeFraction(Fraction&)
+//Очищает используемую рациональной дробью память.
+//----------------------------------------------------------
+void FreeFraction(Fraction &Frac)
+{
+    if (Frac.Num.Digits != nullptr)
+        free(Frac.Num.Digits);
+    if (Frac.Deno.Digits != nullptr)
+        free(Frac.Deno.Digits);
+    Frac.Num.Digits = nullptr;
+    Frac.Deno.Digits = nullptr;
+    Frac.Num.Sign = false;
+    Frac.Num.Degree = -1;
+    Frac.Deno.Degree = -1;
+}
+
+//----------------------------------------------------------
+//int Comparison(const ContinuedFraction&, const ContinuedFraction&)
+//Сравнение по порядку двух цепных дробей.
+//----------------------------------------------------------
+int Comparison(const ContinuedFraction &CFrac1, const ContinuedFraction &CFrac2)
+{
+    int MaxN{ CFrac1.Degree };
+    if (CFrac1.Degree > CFrac2.Degree)
+        MaxN = CFrac2.Degree;
+    
+    for (int i = 0; i <= MaxN; i++)
+    {
+        int ComparisonResult = Comparison(CFrac1.Elements[i], CFrac2.Elements[i]);
+        if (ComparisonResult != COMPARISON_EQUAL_BIGGER)
+        {
+            bool Minus = (i % 2 == 0) ? false : true;
+            Integer Sub; Subtraction(Sub, CFrac1.Elements[i], CFrac2.Elements[i]);
+            
+            if (Sub.Sign && Minus)
+                Sub.Sign = false;
+            else if (!Sub.Sign && Minus)
+                Sub.Sign = true;
+            
+            if (Sub.Sign)
+                return COMPARISON_SECOND_BIGGER;
+            else
+                return COMPARISON_FIRST_BIGGER;
+        }
+    }
+    if (CFrac1.Degree == CFrac2.Degree)
+        return COMPARISON_EQUAL_BIGGER;
+    else
+    {
+        if (CFrac1.Degree < CFrac2.Degree)
+        {
+            if (CFrac1.Degree % 2 == 0)
+                return COMPARISON_SECOND_BIGGER;
+            else
+                return COMPARISON_FIRST_BIGGER;
+        }
+        else
+        {
+            if (CFrac2.Degree % 2 == 0)
+                return COMPARISON_FIRST_BIGGER;
+            else
+                return COMPARISON_SECOND_BIGGER;
+        }
+    }
+}
+
+//----------------------------------------------------------
+//void WriteConvergenceFractionsTo(Fraction *&FracArray, ContinuedFraction CFrac, int n)
+//Находит первые n подходящих дробей.
+//----------------------------------------------------------
+void WriteConvergenceFractionsTo(Fraction *&FracArray, ContinuedFraction CFrac, int n)
+{
+    if (CFrac.Degree != -1 && n > 0)
+    {
+        int num{ 0 };
+        Fraction Frac;
+        
+        for (int i = 0; i < n; i ++)
+        {
+            if (i == 0)
+            {
+                //p0 = a0, q0 = 1
+                Frac.Num.Sign = CFrac.Elements[num].Sign;
+                Frac.Num.Degree = CFrac.Elements[num].Degree;
+                Frac.Num.Digits = (int*)malloc(sizeof(int)*(Frac.Num.Degree + 1));
+                for (int j = 0; j <= Frac.Num.Degree; j++)
+                    Frac.Num.Digits[j] = CFrac.Elements[num].Digits[j];
+                
+                Frac.Deno.Degree = 0;
+                Frac.Deno.Digits = (int*)malloc(sizeof(int));
+                Frac.Deno.Digits[0] = 1;
+            }
+            else if (i == 1)
+            {
+                //p1 = a0*a1, q0 = a1
+                Natural One; SetOne(One);
+                Integer MulNum; Multiply(MulNum, CFrac.Elements[num], CFrac.Elements[num - 1]);
+                Summary(Frac.Num, MulNum, One);
+                
+                Frac.Deno.Degree = CFrac.Elements[num].Degree;
+                Frac.Deno.Digits = (int*)malloc(sizeof(int)*(Frac.Deno.Degree + 1));
+                for (int j = 0; j <= Frac.Deno.Degree; j++)
+                    Frac.Deno.Digits[j] = CFrac.Elements[num].Digits[j];
+                
+                if (MulNum.Digits != nullptr)
+                    free(MulNum.Digits);
+            }
+            else
+            {
+                //Pn = Pn-1*an + Pn-2, Qn = Qn-1*an + Qn-2
+                Integer NumResult;
+                Multiply(NumResult, FracArray[i-1].Num, CFrac.Elements[num]);
+                Integer SumNum; Summary(SumNum, NumResult, FracArray[i-2].Num);
+                
+                Integer DenoResult;
+                Multiply(DenoResult, CFrac.Elements[num], FracArray[i-1].Deno);
+                Integer SumDeno; Summary(SumDeno, DenoResult, FracArray[i-2].Deno);
+                
+                if (SumNum.Sign && SumDeno.Sign)
+                    Frac.Num.Sign = false;
+                else if (!SumNum.Sign && SumDeno.Sign)
+                    Frac.Num.Sign = true;
+                Frac.Num.Degree = SumNum.Degree;
+                Frac.Num.Digits = SumNum.Digits;
+                Frac.Deno.Degree = SumDeno.Degree;
+                Frac.Deno.Digits = SumDeno.Digits;
+                
+                if (NumResult.Digits != nullptr)
+                    free(NumResult.Digits);
+                if (DenoResult.Digits != nullptr)
+                    free(DenoResult.Digits);
+            }
+            
+            FracArray = (Fraction*)realloc(FracArray, sizeof(Fraction)*(i + 1));
+            FracArray[i].Num.Sign = Frac.Num.Sign;
+            FracArray[i].Num.Degree = Frac.Num.Degree;
+            FracArray[i].Num.Digits = Frac.Num.Digits;
+            FracArray[i].Deno.Degree = Frac.Deno.Degree;
+            FracArray[i].Deno.Digits = Frac.Deno.Digits;
+            
+            num++;
+            if (num > CFrac.Degree)
+            {
+                if (CFrac.PeriodStartPos != -1)
+                    num = CFrac.PeriodStartPos + 1;
+                else
+                {
+                    if (CFrac.Degree != 0)
+                        num = 1;
+                    else
+                        num = 0;
+                }
+            }
+        }
+    }
+    else
+        cout << "Ошибка. Невозможно рассчитать подходящие дроби." << endl;
 }
 
 //----------------------------------------------------------
@@ -1237,6 +1770,31 @@ void FreeContinuedFraction(ContinuedFraction &CFrac)
 //Сравнение по порядку двух квадратичных иррациональностей.
 //----------------------------------------------------------
 int Comparison(const QuadIrrationality &Quad1, const QuadIrrationality &Quad2)
+{
+    int ComparsionResultA = Comparison(Quad1.a, Quad2.a);
+    int ComparsionResultB = Comparison(Quad1.b, Quad2.b);
+    int ComparsionResultC = Comparison(Quad1.c, Quad2.c);
+    int ComparsionResultD = Comparison(Quad1.d, Quad2.d);
+    if (ComparsionResultA == COMPARISON_EQUAL_BIGGER &&
+        ComparsionResultB == COMPARISON_EQUAL_BIGGER &&
+        ComparsionResultC == COMPARISON_EQUAL_BIGGER &&
+        ComparsionResultD == COMPARISON_EQUAL_BIGGER)
+        return COMPARISON_EQUAL_BIGGER;
+    
+    ContinuedFraction CFrac1; ExpandAsContinuedFraction(CFrac1, Quad1);
+    ContinuedFraction CFrac2; ExpandAsContinuedFraction(CFrac2, Quad2);
+    
+    int ComparisonResult = Comparison(CFrac1, CFrac2);
+    FreeContinuedFraction(CFrac1);
+    FreeContinuedFraction(CFrac2);
+    return ComparisonResult;
+}
+
+//----------------------------------------------------------
+//int ComparisonEqual(const QuadIrrationality&, const QuadIrrationality&)
+//Сравнение по равенству двух квадратичных иррациональностей.
+//----------------------------------------------------------
+int ComparisonEqual(const QuadIrrationality &Quad1, const QuadIrrationality &Quad2)
 {
     int ComparsionResultA = Comparison(Quad1.a, Quad2.a);
     int ComparsionResultB = Comparison(Quad1.b, Quad2.b);
@@ -1628,7 +2186,7 @@ void ExpandAsContinuedFraction(ContinuedFraction& Result, QuadIrrationality Quad
                 {
                     for (int k = j + 1; k < PeriodArrayCount && !PeriodFound; k++)
                     {
-                        PeriodFound = (Comparison(PeriodArray[j], PeriodArray[k]) == COMPARISON_EQUAL_BIGGER);
+                        PeriodFound = (ComparisonEqual(PeriodArray[j], PeriodArray[k]) == COMPARISON_EQUAL_BIGGER);
                         if (PeriodFound)
                             PeriodStartPos = j;
                     }
@@ -1864,6 +2422,7 @@ void SubMenu_QuadraticIrrationalities()
 {
     int SubMenuDecision{ 0 };
     int N{ 0 };
+    char OrderSign{ '?' };
     
     QuadIrrationality Quad1;
     QuadIrrationality Quad2;
@@ -1871,6 +2430,8 @@ void SubMenu_QuadraticIrrationalities()
     
     ContinuedFraction CFrac;
     Integer IntegerPart;
+    
+    Fraction *FracArray{ nullptr };
     
     do
     {
@@ -1881,6 +2442,30 @@ void SubMenu_QuadraticIrrationalities()
         switch (SubMenuDecision)
         {
             case 1:
+                cout << "Первая квадратичная иррациональность: ";
+                cin >> Quad1;
+                
+                cout << "Вторая квадратичная иррациональность: ";
+                cin >> Quad2;
+                
+                cout << endl << "Результат: ";
+                N = Comparison(Quad1, Quad2);
+                if (N == COMPARISON_UNUSED_EQUAL)
+                    OrderSign = '?';
+                else if (N == COMPARISON_EQUAL_BIGGER)
+                    OrderSign = '=';
+                else if (N == COMPARISON_FIRST_BIGGER)
+                    OrderSign = '>';
+                else if (N == COMPARISON_SECOND_BIGGER)
+                    OrderSign = '<';
+                
+                cout << Quad1 << " " << OrderSign << " " << Quad2 << endl;
+                
+                FreeQuad(Quad1);
+                FreeQuad(Quad2);
+                systempause();
+                break;
+            case 2:
                 cout << "Первая квадратичная иррациональность: ";
                 cin >> Quad1;
                 
@@ -1901,7 +2486,7 @@ void SubMenu_QuadraticIrrationalities()
                 systempause();
                 break;
             
-            case 2:
+            case 3:
                 cout << "Первая квадратичная иррациональность: ";
                 cin >> Quad1;
                 
@@ -1922,7 +2507,7 @@ void SubMenu_QuadraticIrrationalities()
                 systempause();
                 break;
             
-            case 3:
+            case 4:
                 cout << "Введите квадратичную иррациональность: ";
                 cin >> Quad1; //Сокращение встроено в ввод
                 cout << "Сокращённая квадратичная иррациональность: " << Quad1 << endl;
@@ -1931,7 +2516,7 @@ void SubMenu_QuadraticIrrationalities()
                 systempause();
                 break;
                 
-            case 4:
+            case 5:
                 cout << "Введите квадратичную иррациональность: ";
                 cin >> Quad1;
                 
@@ -1943,7 +2528,7 @@ void SubMenu_QuadraticIrrationalities()
                 systempause();
                 break;
             
-            case 5:
+            case 6:
                 cout << "Введите квадратичную иррациональность: ";
                 cin >> Quad1;
                 
@@ -1956,13 +2541,13 @@ void SubMenu_QuadraticIrrationalities()
                 systempause();
                 break;
             
-            case 6:
+            case 7:
                 cout << "Введите квадратичную иррациональность: ";
                 cin >> Quad1;
                 
                 do
                 {
-                    cout << "Введите N: " << endl;
+                    cout << "Введите N: ";
                     cin >> N;
                     if (N <= 0)
                         cout << "Ошибка ввода. N не может быть неположительным." << endl;
@@ -1978,7 +2563,7 @@ void SubMenu_QuadraticIrrationalities()
                 systempause();
                 break;
                 
-            case 7:
+            case 8:
                 cout << "Введите квадратичную иррациональность: ";
                 cin >> Quad1;
                 
@@ -1994,7 +2579,45 @@ void SubMenu_QuadraticIrrationalities()
                 systempause();
                 break;
             
-            case 8:
+            case 9:
+                cout << "Введите квадратичную иррациональность: ";
+                cin >> Quad1;
+                
+                cout << "Цепная периодическая дробь: ";
+                ExpandAsContinuedFraction(CFrac, Quad1);
+                cout << CFrac << endl;
+                
+                do
+                {
+                    cout << "Введите N: ";
+                    cin >> N;
+                    if (N <= 0)
+                        cout << "Ошибка ввода. N не может быть неположительным." << endl;
+                    cin.clear(); cin.ignore();
+                } while (N <= 0);
+                
+                cout << "Наилучшие приближения (подходящие дроби): " << endl;
+                WriteConvergenceFractionsTo(FracArray, CFrac, N);
+                if (FracArray != nullptr)
+                {
+                    for (int i = 0; i < N; i++)
+                        cout << i+1 << ") " << FracArray[i] << endl;
+                }
+                
+                FreeQuad(Quad1);
+                FreeContinuedFraction(CFrac);
+                if (FracArray != nullptr)
+                {
+                    for (int i = 0; i < N; i++)
+                        FreeFraction(FracArray[i]);
+                    free(FracArray);
+                }
+                FracArray = nullptr;
+                
+                systempause();
+                break;
+                
+            case 10:
                 break;
             
             default:
@@ -2003,7 +2626,7 @@ void SubMenu_QuadraticIrrationalities()
                 break;
         }
         
-    } while (SubMenuDecision != 8);
+    } while (SubMenuDecision != 10);
 }
 
 //----------------------------------------------------------
@@ -2015,14 +2638,16 @@ void Menu_QuadraticIrrationalities()
     systemclear();
     
     cout << "--------------------ПОДМЕНЮ:--------------------" << endl;
-    cout << "1 - Сложение квадратичных рациональностей" << endl;
-    cout << "2 - Разность квадратичных рациональностей" << endl;
-    cout << "3 - Сокращение квадратичной иррациональности" << endl;
-    cout << "4 - Выделение целой части квадратичной иррациональности" << endl;
-    cout << "5 - Разложение квадратичной иррациональности в периодическую цепную дробь" << endl;
-    cout << "6 - Разложение квадратичной иррациональности в цепную дробь с N элементами" << endl;
-    cout << "7 - Разложение квадратичной иррациональности в периодическую цепную дробь со сравнением из 50 элементов" << endl;
-    cout << "8 - Возврат в надменю" << endl;
+    cout << "1 - Сравнение по порядку квадратичных иррациональностей" << endl;
+    cout << "2 - Сложение квадратичных иррациональностей" << endl;
+    cout << "3 - Разность квадратичных иррациональностей" << endl;
+    cout << "4 - Сокращение квадратичной иррациональности" << endl;
+    cout << "5 - Выделение целой части квадратичной иррациональности" << endl;
+    cout << "6 - Разложение квадратичной иррациональности в периодическую цепную дробь" << endl;
+    cout << "7 - Разложение квадратичной иррациональности в цепную дробь с N элементами" << endl;
+    cout << "8 - Разложение квадратичной иррациональности в периодическую цепную дробь со сравнением из 50 элементов" << endl;
+    cout << "9 - Найти N приближений квадратичной иррациональности" << endl;
+    cout << "10 - Возврат в надменю" << endl;
     cout << "------------------------------------------------" << endl;
 }
 
@@ -2105,9 +2730,20 @@ int main()
     
     cout << "Первые 40 элементов: ";
     ContinuedFraction CFrac1; ExpandAsContinuedFractionN(CFrac1, Quad1, 40);
-    cout << CFrac1 << endl;
+     cout << CFrac1 << endl;*/
     
-    systempause();*/
+    /*cout << "Введите дробь 1: ";
+    Fraction Frac1; cin >> Frac1;
+    cout << Frac1 << endl;
+    
+    cout << "Введите дробь 2: ";
+    Fraction Frac2; cin >> Frac2;
+    cout << Frac2 << endl;
+    
+    Fraction Sum; Summary(Sum, Frac1, Frac2);
+    cout << "Сумма: " << Sum << endl;*/
+    
+    //systempause();
     
     int MenuDecision{ 0 };
     
