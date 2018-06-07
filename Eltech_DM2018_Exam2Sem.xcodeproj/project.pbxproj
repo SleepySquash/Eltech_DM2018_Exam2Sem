@@ -8,6 +8,12 @@
 
 /* Begin PBXBuildFile section */
 		DD6242E220B6A7AA00B0A3A5 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DD6242E120B6A7AA00B0A3A5 /* main.cpp */; };
+		DD9C6F8B20C91C9E008F37F8 /* Natural.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DD9C6F8920C91C9E008F37F8 /* Natural.cpp */; };
+		DD9C6F8E20C91CB1008F37F8 /* Integer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DD9C6F8C20C91CB1008F37F8 /* Integer.cpp */; };
+		DD9C6F9120C91CD2008F37F8 /* Fraction.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DD9C6F8F20C91CD2008F37F8 /* Fraction.cpp */; };
+		DD9C6F9420C91CDF008F37F8 /* ContinuedFraction.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DD9C6F9220C91CDF008F37F8 /* ContinuedFraction.cpp */; };
+		DD9C6F9720C91CED008F37F8 /* QuadIrrationality.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DD9C6F9520C91CED008F37F8 /* QuadIrrationality.cpp */; };
+		DD9C6F9B20C91D57008F37F8 /* Base.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DD9C6F9920C91D57008F37F8 /* Base.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -26,6 +32,18 @@
 		DD6242DE20B6A7AA00B0A3A5 /* Eltech_DM2018_Exam2Sem */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Eltech_DM2018_Exam2Sem; sourceTree = BUILT_PRODUCTS_DIR; };
 		DD6242E120B6A7AA00B0A3A5 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		DD9695A620BA21B9008CD386 /* obsolete.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = obsolete.h; sourceTree = "<group>"; };
+		DD9C6F8920C91C9E008F37F8 /* Natural.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Natural.cpp; sourceTree = "<group>"; };
+		DD9C6F8A20C91C9E008F37F8 /* Natural.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Natural.hpp; sourceTree = "<group>"; };
+		DD9C6F8C20C91CB1008F37F8 /* Integer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Integer.cpp; sourceTree = "<group>"; };
+		DD9C6F8D20C91CB1008F37F8 /* Integer.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Integer.hpp; sourceTree = "<group>"; };
+		DD9C6F8F20C91CD2008F37F8 /* Fraction.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Fraction.cpp; sourceTree = "<group>"; };
+		DD9C6F9020C91CD2008F37F8 /* Fraction.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Fraction.hpp; sourceTree = "<group>"; };
+		DD9C6F9220C91CDF008F37F8 /* ContinuedFraction.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ContinuedFraction.cpp; sourceTree = "<group>"; };
+		DD9C6F9320C91CDF008F37F8 /* ContinuedFraction.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = ContinuedFraction.hpp; sourceTree = "<group>"; };
+		DD9C6F9520C91CED008F37F8 /* QuadIrrationality.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = QuadIrrationality.cpp; sourceTree = "<group>"; };
+		DD9C6F9620C91CED008F37F8 /* QuadIrrationality.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = QuadIrrationality.hpp; sourceTree = "<group>"; };
+		DD9C6F9920C91D57008F37F8 /* Base.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Base.cpp; sourceTree = "<group>"; };
+		DD9C6F9A20C91D57008F37F8 /* Base.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Base.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -58,10 +76,38 @@
 		DD6242E020B6A7AA00B0A3A5 /* Eltech_DM2018_Exam2Sem */ = {
 			isa = PBXGroup;
 			children = (
+				DD9C6F9820C91D13008F37F8 /* Essentials */,
+				DD9C6F8820C91C89008F37F8 /* Modules */,
 				DD6242E120B6A7AA00B0A3A5 /* main.cpp */,
 				DD9695A620BA21B9008CD386 /* obsolete.h */,
 			);
 			path = Eltech_DM2018_Exam2Sem;
+			sourceTree = "<group>";
+		};
+		DD9C6F8820C91C89008F37F8 /* Modules */ = {
+			isa = PBXGroup;
+			children = (
+				DD9C6F8920C91C9E008F37F8 /* Natural.cpp */,
+				DD9C6F8A20C91C9E008F37F8 /* Natural.hpp */,
+				DD9C6F8C20C91CB1008F37F8 /* Integer.cpp */,
+				DD9C6F8D20C91CB1008F37F8 /* Integer.hpp */,
+				DD9C6F8F20C91CD2008F37F8 /* Fraction.cpp */,
+				DD9C6F9020C91CD2008F37F8 /* Fraction.hpp */,
+				DD9C6F9220C91CDF008F37F8 /* ContinuedFraction.cpp */,
+				DD9C6F9320C91CDF008F37F8 /* ContinuedFraction.hpp */,
+				DD9C6F9520C91CED008F37F8 /* QuadIrrationality.cpp */,
+				DD9C6F9620C91CED008F37F8 /* QuadIrrationality.hpp */,
+			);
+			path = Modules;
+			sourceTree = "<group>";
+		};
+		DD9C6F9820C91D13008F37F8 /* Essentials */ = {
+			isa = PBXGroup;
+			children = (
+				DD9C6F9920C91D57008F37F8 /* Base.cpp */,
+				DD9C6F9A20C91D57008F37F8 /* Base.hpp */,
+			);
+			path = Essentials;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -121,6 +167,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				DD6242E220B6A7AA00B0A3A5 /* main.cpp in Sources */,
+				DD9C6F8E20C91CB1008F37F8 /* Integer.cpp in Sources */,
+				DD9C6F9420C91CDF008F37F8 /* ContinuedFraction.cpp in Sources */,
+				DD9C6F8B20C91C9E008F37F8 /* Natural.cpp in Sources */,
+				DD9C6F9720C91CED008F37F8 /* QuadIrrationality.cpp in Sources */,
+				DD9C6F9B20C91D57008F37F8 /* Base.cpp in Sources */,
+				DD9C6F9120C91CD2008F37F8 /* Fraction.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
