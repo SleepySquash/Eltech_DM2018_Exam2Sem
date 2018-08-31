@@ -125,6 +125,32 @@ void OptimazeNatural(Natural &Nat)
 }
 
 //----------------------------------------------------------
+//void CopyNaturalFrom(Natural&, Natural)
+//Создание копии указанного натурального числа.
+//----------------------------------------------------------
+void CopyNaturalFrom(Natural& Result, Natural Root)
+{
+    if (Result.Digits != nullptr)
+        free(Result.Digits);
+    Result.Degree = Root.Degree;
+    Result.Digits = (char*)malloc(sizeof(char)*(Result.Degree + 1));
+    for (int i = 0; i <= Result.Degree; i++)
+        Result.Digits[i] = Root.Digits[i];
+}
+
+//----------------------------------------------------------
+//void FreeNatural(Natural&)
+//Очистка используемой натуральным числом памяти.
+//----------------------------------------------------------
+void FreeNatural(Natural& Nat)
+{
+    if (Nat.Digits != nullptr)
+        free(Nat.Digits);
+    Nat.Degree = -1;
+    Nat.Digits = nullptr;
+}
+
+//----------------------------------------------------------
 //void Summary(Natural&, Natural, Natural)
 //Сумма натуральных чисел.
 //----------------------------------------------------------
@@ -275,10 +301,10 @@ void Multiply(Natural &Mul, Natural that, Natural other)
 }
 
 //----------------------------------------------------------
-//void Divide(Natural&, Natural, Natural)
+//void Divide_obsolete(Natural&, Natural, Natural)
 //Деление нацело натуральных чисел.
 //----------------------------------------------------------
-void Divide(Natural &QuoResult, Natural that, Natural other)
+void Divide_obsolete(Natural &QuoResult, Natural that, Natural other)
 {
     if (Comparison(that, other) == COMPARISON_SECOND_BIGGER)
         SetZero(QuoResult);
@@ -370,10 +396,10 @@ void DivideNoStrict(Natural &QuoResult, Natural that, Natural other)
 }
 
 //----------------------------------------------------------
-//void Modulo(Natural&, Natural, Natural)
-//Деление нацело натуральных чисел.
+//void Modulo_obsolete(Natural&, Natural, Natural)
+//Остаток от деления натуральных чисел.
 //----------------------------------------------------------
-void Modulo(Natural &RemResult, Natural that, Natural other)
+void Modulo_obsolete(Natural &RemResult, Natural that, Natural other)
 {
     if (Comparison(that, other) == COMPARISON_SECOND_BIGGER)
     {
@@ -478,9 +504,10 @@ void PowerOfTen(Natural& Result, Natural Nat, int Power)
 //void GreatestCommonDivisor(Natural&, Natural, Natural)
 //НОД натуральных чисел.
 //----------------------------------------------------------
-void GreatestCommonDivisor(Natural& GCD, Natural Nat1, Natural Nat2)
+void GreatestCommonDivisor2(Natural& GCD, Natural Nat1, Natural Nat2)
 {
     Natural Zero; SetZero(Zero);
+    Natural One; SetOne(One);
     if (Comparison(Zero, Nat1) == COMPARISON_EQUAL_BIGGER)
     {
         GCD.Degree = Nat2.Degree;
@@ -499,6 +526,8 @@ void GreatestCommonDivisor(Natural& GCD, Natural Nat1, Natural Nat2)
         for (int i = 0; i <= GCD.Degree; i++)
             GCD.Digits[i] = Nat1.Digits[i];
     }
+    else if (Comparison(One, Nat1) == COMPARISON_EQUAL_BIGGER || Comparison(One, Nat2) == COMPARISON_EQUAL_BIGGER)
+        SetOne(GCD);
     else
     {
         Natural A;
@@ -549,6 +578,45 @@ void GreatestCommonDivisor(Natural& GCD, Natural Nat1, Natural Nat2)
     
     if (Zero.Digits != nullptr)
         free(Zero.Digits);
+    if (One.Digits != nullptr)
+        free(One.Digits);
+}
+
+void ConvertFromNatural(unsigned long long &n, Natural Nat)
+{
+    n = 0;
+    for (int i = 0; i <= Nat.Degree; i++)
+    {
+        unsigned long long Sum; Sum = Nat.Digits[i];
+        for (int j = 0; j < i; j++)
+            Sum = Sum * 10;
+        
+        n += Sum;
+    }
+}
+
+//----------------------------------------------------------
+//void GreatestCommonDivisor(Natural&, Natural, Natural)
+//НОД натуральных чисел.
+//----------------------------------------------------------
+void GreatestCommonDivisor(Natural& GCD, Natural Nat1, Natural Nat2)
+{
+    if (Nat1.Degree > 18 || Nat2.Degree > 18)
+        GreatestCommonDivisor2(GCD, Nat1, Nat2);
+    else
+    {
+        unsigned long long First; ConvertFromNatural(First, Nat1);
+        unsigned long long Second; ConvertFromNatural(Second, Nat2);
+        
+        while ( Second != 0)
+        {
+            unsigned long long r = First % Second;
+            First = Second;
+            Second = r;
+        }
+        
+        ConvertToNatural(GCD, First);
+    }
 }
 
 //----------------------------------------------------------
@@ -559,10 +627,31 @@ void LeastCommonMultiple(Natural& LCM, Natural Nat1, Natural Nat2)
 {
     Natural Mul; Multiply(Mul, Nat1, Nat2);
     Natural GCD; GreatestCommonDivisor(GCD, Nat1, Nat2);
-    Divide(LCM, Mul, GCD);
+    Divide_obsolete(LCM, Mul, GCD);
     
     if (Mul.Digits != nullptr)
         free(Mul.Digits);
     if (GCD.Digits != nullptr)
         free(GCD.Digits);
+}
+
+//----------------------------------------------------------
+//void FormNaturalFromPartAtBeginning(Natural&, Natural, int)
+//Формирование нового числа из первых dig цифр указанного.
+//----------------------------------------------------------
+void FormNaturalFromPartAtBeginning(Natural& Res, Natural Nat, int dig)
+{
+    if (Nat.Degree > dig - 1)
+    {
+        Res.Degree = dig - 1;
+        Res.Digits = (char*)malloc(sizeof(char)*(Res.Degree + 1));
+        for (int i = Nat.Degree; i > Nat.Degree - dig; i--)
+        {
+            Res.Digits[i - Nat.Degree + dig - 1] = Nat.Digits[i];
+        }
+    }
+    else if (Nat.Degree == dig - 1)
+        CopyNaturalFrom(Res, Nat);
+    else
+        cout << "Ошибка. Попытка выделить первые " << dig << " цифр из числа со степенью " << Nat.Degree << "." << endl;
 }

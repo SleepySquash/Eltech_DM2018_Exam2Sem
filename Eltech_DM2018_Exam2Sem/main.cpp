@@ -10,6 +10,7 @@
 
 #include "Modules/Natural.hpp"
 #include "Modules/Integer.hpp"
+#include "Modules/DivideSession.hpp"
 #include "Modules/Fraction.hpp"
 #include "Modules/ContinuedFraction.hpp"
 #include "Modules/QuadIrrationality.hpp"
@@ -83,7 +84,7 @@ void Menu()
     systemclear();
     
     cout << "Альтернативный экзамен \"КВАДРАТИЧНЫЕ ИРРАЦИОНАЛЬНОСТИ\"." << endl;
-    cout << "Version 1.0.0 (29.05.2018)." << endl;
+    cout << "Version 1.0.2 (07.06.2018)." << endl;
     cout << "Автор: Исаенко Никита, 7305." << endl << endl;
     
     cout << "Данная программа реализует работу компьютерной алгебры с модулями на тему  \"Квадратичные иррациональности\"." << endl << endl;
@@ -176,7 +177,7 @@ void SubMenu_QuadraticIrrationalities()
                 cin >> Quad2;
                 
                 cout << Quad1 << endl;
-                cout << "   +" << endl;
+                cout << "   -" << endl;
                 cout << Quad2 << endl;
                 cout << "   =" << endl;
                 
@@ -216,7 +217,7 @@ void SubMenu_QuadraticIrrationalities()
                 
                 cout << "Цепная дробь: ";
                 ExpandAsContinuedFraction(CFrac, Quad1);
-                cout << CFrac << endl;
+                cout << CFrac << endl << "Длина периода: " << CFrac.Degree - CFrac.PeriodStartPos << endl;
                 
                 FreeContinuedFraction(CFrac);
                 
@@ -251,7 +252,9 @@ void SubMenu_QuadraticIrrationalities()
                 
                 cout << "Цепная дробь: ";
                 ExpandAsContinuedFraction(CFrac, Quad1);
-                cout << CFrac << endl; FreeContinuedFraction(CFrac);
+                cout << CFrac << endl << "Длина периода: " << CFrac.Degree - CFrac.PeriodStartPos << endl;
+                FreeContinuedFraction(CFrac);
+                
                 cout << "Первые 50 неполных частных: ";
                 ExpandAsContinuedFractionN(CFrac, Quad1, 50);
                 cout << CFrac << endl;
@@ -267,7 +270,7 @@ void SubMenu_QuadraticIrrationalities()
                 
                 cout << "Цепная периодическая дробь: ";
                 ExpandAsContinuedFraction(CFrac, Quad1);
-                cout << CFrac << endl;
+                cout << CFrac << endl << "Длина периода: " << CFrac.Degree - CFrac.PeriodStartPos << endl;
                 
                 do
                 {

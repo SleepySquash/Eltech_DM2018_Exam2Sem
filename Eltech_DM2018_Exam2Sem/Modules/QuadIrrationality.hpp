@@ -16,6 +16,7 @@
 
 #include "Natural.hpp"
 #include "Integer.hpp"
+#include "DivideSession.hpp"
 #include "Fraction.hpp"
 #include "ContinuedFraction.hpp"
 
@@ -46,6 +47,7 @@ void Subtraction(QuadIrrationality&, QuadIrrationality, QuadIrrationality);
 void FreeQuad(QuadIrrationality&);
 void FreeQuad(QuadIrrationality*);
 void EstimateRootLowerThat(Natural&, Natural);
+void EstimateRootLowerThat_binary(Natural&, Natural);
 void MultiplyByConjugate(Integer&, QuadIrrationality);
 void ReduceQuadIrrationality(QuadIrrationality& Quad);
 void QuadIrrationalityEquasion(QuadIrrationality&, QuadIrrationality&);

@@ -16,6 +16,7 @@
 
 #include "Natural.hpp"
 #include "Integer.hpp"
+#include "DivideSession.hpp"
 
 /*Для упрощения вызова следующих функций*/
 using std::endl;

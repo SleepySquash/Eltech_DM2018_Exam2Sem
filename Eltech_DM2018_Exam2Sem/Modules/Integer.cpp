@@ -166,7 +166,7 @@ void Divide(Integer &QuoResult, Integer that, Integer other)
     {
         Natural Nat1; Nat1.Degree = that.Degree; Nat1.Digits = that.Digits;
         Natural Nat2; Nat2.Degree = other.Degree; Nat2.Digits = other.Digits;
-        Natural NMul; Divide(NMul, Nat1, Nat2);
+        Natural NMul; Divide_obsolete(NMul, Nat1, Nat2);
         QuoResult.Degree = NMul.Degree;
         QuoResult.Digits = NMul.Digits;
     }
@@ -174,7 +174,7 @@ void Divide(Integer &QuoResult, Integer that, Integer other)
     {
         Natural Nat1; Nat1.Degree = that.Degree; Nat1.Digits = that.Digits;
         Natural Nat2; Nat2.Degree = other.Degree; Nat2.Digits = other.Digits;
-        Natural NMul; Divide(NMul, Nat1, Nat2);
+        Natural NMul; Divide_obsolete(NMul, Nat1, Nat2);
         QuoResult.Degree = NMul.Degree;
         QuoResult.Digits = NMul.Digits;
     }
@@ -214,7 +214,7 @@ void Modulo(Integer &RemResult, Integer that, Integer other)
     {
         Natural Nat1; Nat1.Degree = that.Degree; Nat1.Digits = that.Digits;
         Natural Nat2; Nat2.Degree = other.Degree; Nat2.Digits = other.Digits;
-        Natural NMul; Modulo(NMul, Nat1, Nat2);
+        Natural NMul; Modulo_obsolete(NMul, Nat1, Nat2);
         RemResult.Degree = NMul.Degree;
         RemResult.Digits = NMul.Digits;
     }
@@ -222,7 +222,7 @@ void Modulo(Integer &RemResult, Integer that, Integer other)
     {
         Natural Nat1; Nat1.Degree = that.Degree; Nat1.Digits = that.Digits;
         Natural Nat2; Nat2.Degree = other.Degree; Nat2.Digits = other.Digits;
-        Natural NMul; Modulo(NMul, Nat1, Nat2);
+        Natural NMul; Modulo_obsolete(NMul, Nat1, Nat2);
         RemResult.Degree = NMul.Degree;
         RemResult.Digits = NMul.Digits;
     }
@@ -297,14 +297,14 @@ void Multiply(Integer &Mul, Integer that, Natural other)
 }
 
 //----------------------------------------------------------
-//void Divide(Integer&, Integer, Natural)
+//void Divide_obsolete(Integer&, Integer, Natural)
 //Деление нацело целого числа на натуральное.
 //----------------------------------------------------------
-void Divide(Integer &QuoResult, Integer that, Natural other)
+void Divide_obsolete(Integer &QuoResult, Integer that, Natural other)
 {
     QuoResult.Sign = that.Sign;
     Natural Nat1; Nat1.Degree = that.Degree; Nat1.Digits = that.Digits;
-    Natural NMul; Divide(NMul, Nat1, other);
+    Natural NMul; Divide_obsolete(NMul, Nat1, other);
     QuoResult.Degree = NMul.Degree;
     QuoResult.Digits = NMul.Digits;
 }

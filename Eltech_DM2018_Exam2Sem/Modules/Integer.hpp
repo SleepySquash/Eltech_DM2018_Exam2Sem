@@ -47,7 +47,7 @@ void ModuloNoStrict(Integer&, Integer, Integer);
 /*Объявляем функции работы целых с натуральными числами*/
 void Summary(Integer&, Integer, Natural);
 void Multiply(Integer&, Integer, Natural);
-void Divide(Integer&, Integer, Natural);
+void Divide_obsolete(Integer&, Integer, Natural);
 void DivideNoStrict(Integer&, Integer, Natural);
 void ConvertEqualToNatural(Natural&, Integer);
 

@@ -211,7 +211,7 @@ void IsQuadIrrationalityValid(Fraction &Result, QuadIrrationality Quad)
     Integer BSquared; Multiply(BSquared, Quad.b, Quad.b);
     Natural BSquaredNat; BSquaredNat.Degree = BSquared.Degree; BSquaredNat.Digits = BSquared.Digits;
     Natural PreciseRoot; Multiply(PreciseRoot, Quad.c, BSquaredNat);
-    Natural RootEstimation; EstimateRootLowerThat(RootEstimation, PreciseRoot);
+    Natural RootEstimation; EstimateRootLowerThat_binary(RootEstimation, PreciseRoot);
     Natural RootEstimationSquared; Multiply(RootEstimationSquared, RootEstimation, RootEstimation);
     
     if (Comparison(RootEstimationSquared, PreciseRoot) == COMPARISON_EQUAL_BIGGER)
@@ -272,16 +272,20 @@ int Comparison(const QuadIrrationality &Quad1, const QuadIrrationality &Quad2)
 //Сравнение по равенству двух квадратичных иррациональностей.
 //----------------------------------------------------------
 int ComparisonEqual(const QuadIrrationality &Quad1, const QuadIrrationality &Quad2)
-{
-    int ComparsionResultA = Comparison(Quad1.a, Quad2.a);
-    int ComparsionResultB = Comparison(Quad1.b, Quad2.b);
-    int ComparsionResultC = Comparison(Quad1.c, Quad2.c);
-    int ComparsionResultD = Comparison(Quad1.d, Quad2.d);
-    if (ComparsionResultA == COMPARISON_EQUAL_BIGGER &&
-        ComparsionResultB == COMPARISON_EQUAL_BIGGER &&
-        ComparsionResultC == COMPARISON_EQUAL_BIGGER &&
-        ComparsionResultD == COMPARISON_EQUAL_BIGGER)
-        return COMPARISON_EQUAL_BIGGER;
+{//1242 + v51512/531
+    if (Quad1.a.Degree == Quad2.a.Degree && Quad1.b.Degree == Quad2.b.Degree && Quad1.c.Degree == Quad2.c.Degree && Quad1.d.Degree == Quad2.d.Degree)
+    {
+        if (Quad1.a.Digits[0] == Quad2.a.Digits[0] && Quad1.b.Digits[0] == Quad2.b.Digits[0] && Quad1.d.Digits[0] == Quad2.d.Digits[0])
+        {
+            int ComparsionResultA = Comparison(Quad1.a, Quad2.a);
+            int ComparsionResultB = Comparison(Quad1.b, Quad2.b);
+            int ComparsionResultD = Comparison(Quad1.d, Quad2.d);
+            if (ComparsionResultA == COMPARISON_EQUAL_BIGGER &&
+                ComparsionResultB == COMPARISON_EQUAL_BIGGER &&
+                ComparsionResultD == COMPARISON_EQUAL_BIGGER)
+                return COMPARISON_EQUAL_BIGGER;
+        }
+    }
     
     return COMPARISON_UNUSED_EQUAL;
 }
@@ -474,6 +478,62 @@ void EstimateRootLowerThat(Natural& Result, Natural Root)
 }
 
 //----------------------------------------------------------
+//void EstimateRootLowerThat_binary(Natural&, Natural)
+//Оценка корня снизу методом бинарного (двоичного) поиска.
+//----------------------------------------------------------
+void EstimateRootLowerThat_binary(Natural& Result, Natural Root)
+{
+    Natural One; SetOne(One);
+    if (Comparison(Root, One) == COMPARISON_SECOND_BIGGER)
+        SetZero(Result);
+    else
+    {
+        Natural Left; SetZero(Left);
+        Natural Right; CopyNaturalFrom(Right, Root);
+        
+        //небольшая отсылка к ZeroTwo из Darling in the FranXX ( ͡° ͜ʖ ͡°)
+        //Кто лучше: ZeroTwo или 2B?
+        Natural ZeroTwo; SetZero(ZeroTwo); ZeroTwo.Digits[0] = 2;
+        Natural Sum; Summary(Sum, Left, Right);
+        Natural Middle; Divide(Middle, Sum, ZeroTwo); FreeNatural(Sum);
+        
+        Natural Sub; Subtraction(Sub, Right, Left);
+        while (Comparison(Sub, One) == COMPARISON_FIRST_BIGGER)
+        {
+            Natural Mul; Multiply(Mul, Middle, Middle);
+            
+            if (Comparison(Mul, Root) != COMPARISON_FIRST_BIGGER)
+            {
+                FreeNatural(Left);
+                Left.Degree = Middle.Degree;
+                Left.Digits = Middle.Digits;
+            }
+            else
+            {
+                FreeNatural(Right);
+                Right.Degree = Middle.Degree;
+                Right.Digits = Middle.Digits;
+            }
+            Summary(Sum, Left, Right);
+            Divide(Middle, Sum, ZeroTwo); FreeNatural(Sum);
+            
+            FreeNatural(Sub);
+            Subtraction(Sub, Right, Left);
+        }
+        FreeNatural(Sub);
+        
+        Result.Degree = Middle.Degree;
+        Result.Digits = Middle.Digits;
+        
+        FreeNatural(Left);
+        FreeNatural(Right);
+        FreeNatural(ZeroTwo);
+    }
+    
+    FreeNatural(One);
+}
+
+//----------------------------------------------------------
 //void MultiplyByConjugate(Integer&, QuadIrrationality)
 //Умножение квадратичной иррациональности на сопряжённую квадратичную иррациональность (без учёта знаменателя).
 //----------------------------------------------------------
@@ -569,7 +629,7 @@ void GetIntegerPartFromQuadIrrationality(Integer& IntegerPart, QuadIrrationality
         Integer BSquared; Multiply(BSquared, Quad.b, Quad.b);
         Natural BSquaredNat; BSquaredNat.Degree = BSquared.Degree; BSquaredNat.Digits = BSquared.Digits;
         Natural PreciseRoot; Multiply(PreciseRoot, Quad.c, BSquaredNat);
-        Natural RootEstimation; EstimateRootLowerThat(RootEstimation, PreciseRoot);
+        Natural RootEstimation; EstimateRootLowerThat_binary(RootEstimation, PreciseRoot);
         Integer FromCPart; FromCPart.Sign = Quad.b.Sign; FromCPart.Degree = RootEstimation.Degree; FromCPart.Digits = RootEstimation.Digits;
         
         Integer NumeIntegerPart; Summary(NumeIntegerPart, Quad.a, FromCPart);

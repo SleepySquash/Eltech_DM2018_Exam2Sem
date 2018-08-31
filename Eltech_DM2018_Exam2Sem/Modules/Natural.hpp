@@ -37,15 +37,18 @@ void SetOne(Natural&);
 int Comparison(const Natural&, const Natural&);
 void OptimazeNatural(Natural&);
 void ConvertToNatural(Natural&, int);
+void CopyNaturalFrom(Natural&, Natural);
+void FreeNatural(Natural&);
 void Summary(Natural&, Natural, Natural);
 void Subtraction(Natural&, Natural, Natural);
 void Multiply(Natural&, Natural, Natural);
-void Divide(Natural&, Natural, Natural);
+void Divide_obsolete(Natural&, Natural, Natural);
 void DivideNoStrict(Natural&, Natural, Natural);
-void Modulo(Natural&, Natural, Natural);
+void Modulo_obsolete(Natural&, Natural, Natural);
 void ModuloNoStrict(Natural&, Natural, Natural);
 void PowerOfTen(Natural&, Natural, int);
 void GreatestCommonDivisor(Natural&, Natural, Natural);
 void LeastCommonMultiple(Natural&, Natural, Natural);
+void FormNaturalFromPartAtBeginning(Natural&, Natural, int);
 
 #endif /* Natural_hpp */
